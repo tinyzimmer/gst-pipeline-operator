@@ -1,0 +1,24 @@
+# permissions for end users to edit splittransforms.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: splittransform-editor-role
+rules:
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - splittransforms
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - splittransforms/status
+  verbs:
+  - get

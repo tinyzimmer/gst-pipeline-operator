@@ -1,0 +1,20 @@
+# permissions for end users to view splittransforms.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: splittransform-viewer-role
+rules:
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - splittransforms
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - splittransforms/status
+  verbs:
+  - get

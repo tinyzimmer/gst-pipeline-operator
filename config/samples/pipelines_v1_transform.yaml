@@ -1,0 +1,43 @@
+---
+apiVersion: pipelines.gst.io/v1
+kind: Transform
+metadata:
+  name: mp4-converter
+spec:
+  globals:
+    minio:
+      endpoint: "minio.default.svc.cluster.local:9000"
+      insecureNoTLS: true
+      region: us-east-1
+      bucket: gst-processing
+      credentialsSecret:
+        name: minio-credentials
+  src:
+    minio:
+      key: drop/
+  sink:
+    minio:
+      key: "mp4/{{ .SrcName }}.mp4"
+  pipeline:
+    debug:
+      dot:
+        path: debug/
+        render: png
+    elements:
+      - name: decodebin
+        alias: dbin
+
+      - goto: dbin
+      - name: queue
+      - name: audioconvert
+      - name: audioresample
+      - name: voaacenc
+      - linkto: mux
+
+      - goto: dbin
+      - name: queue
+      - name: videoconvert
+      - name: x264enc
+
+      - name: mp4mux
+        alias: mux

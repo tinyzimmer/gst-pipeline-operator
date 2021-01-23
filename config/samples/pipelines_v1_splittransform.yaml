@@ -1,0 +1,45 @@
+---
+apiVersion: pipelines.gst.io/v1
+kind: SplitTransform
+metadata:
+  name: video-splitter
+spec:
+  globals:
+    minio:
+      endpoint: "minio.default.svc.cluster.local:9000"
+      insecureNoTLS: true
+      region: us-east-1
+      bucket: gst-processing
+      credentialsSecret:
+        name: minio-credentials
+  src:
+    minio:
+      key: split/
+  video:
+    minio:
+      key: split_video/{{ .SrcName }}.mp4
+  audio:
+    minio:
+      key: split_audio/{{ .SrcName }}.mp3
+  pipeline:
+    debug:
+      dot:
+        path: split_debug/
+        render: png
+    elements:
+      - name: decodebin
+        alias: dbin
+
+      - goto: dbin
+      - name: queue
+      - name: audioconvert
+      - name: audioresample
+      - name: lamemp3enc
+      - linkto: audio-out
+
+      - goto: dbin
+      - name: queue
+      - name: videoconvert
+      - name: x264enc
+      - name: mp4mux
+      - linkto: video-out

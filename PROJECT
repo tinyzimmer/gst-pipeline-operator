@@ -1,0 +1,15 @@
+domain: gst.io
+layout: go.kubebuilder.io/v3
+multigroup: true
+projectName: gst-pipeline-operator
+repo: github.com/tinyzimmer/gst-pipeline-operator
+resources:
+- group: pipelines
+  kind: Transform
+  version: v1
+- group: pipelines
+  kind: Job
+  version: v1
+version: 3-alpha
+plugins:
+  go.sdk.operatorframework.io/v2-alpha: {}
