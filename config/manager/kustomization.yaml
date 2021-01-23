@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: ghcr.io/tinyzimmer/gst-pipeline-operator/controller
-  newTag: 0.0.1
+  newTag: latest

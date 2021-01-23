@@ -1504,7 +1504,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: ghcr.io/tinyzimmer/gst-pipeline-operator/controller:0.0.1
+        image: ghcr.io/tinyzimmer/gst-pipeline-operator/controller:latest
         name: manager
         resources:
           limits:
