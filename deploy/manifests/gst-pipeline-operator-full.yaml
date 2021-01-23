@@ -1,0 +1,1516 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: gst-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: jobs.pipelines.gst.io
+spec:
+  group: pipelines.gst.io
+  names:
+    kind: Job
+    listKind: JobList
+    plural: jobs
+    singular: job
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.src.name
+      name: Src
+      type: string
+    - jsonPath: .spec.sinks[*].name
+      name: Sinks
+      type: string
+    - jsonPath: .status.conditions[-1].message
+      name: Status
+      priority: 1
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: Job is the Schema for the jobs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: JobSpec defines the desired state of Job
+            properties:
+              pipelineRef:
+                description: A reference to the pipeline for this job's configuration.
+                properties:
+                  kind:
+                    description: Kind is the type of the Pipeline CR
+                    type: string
+                  name:
+                    description: Name is the name of the Pipeline CR
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              sinks:
+                description: The output objects for the pipeline.
+                items:
+                  description: Object represents either a source or destination object
+                    for a job.
+                  properties:
+                    config:
+                      description: The endpoint and bucket configurations for the
+                        object.
+                      properties:
+                        minio:
+                          description: Configurations for a MinIO source or sink
+                          properties:
+                            bucket:
+                              description: In the context of a src config, the bucket
+                                to watch for objects to pass through the pipeline.
+                                In the context of a sink config, the bucket to save
+                                processed objects.
+                              type: string
+                            credentialsSecret:
+                              description: The secret that contains the credentials
+                                for connecting to MinIO. The secret must contain two
+                                keys. The `access-key-id` key must contain the contents
+                                of the Access Key ID. The `secret-access-key` key
+                                must contain the contents of the Secret Access Key.
+                              properties:
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                              type: object
+                            endpoint:
+                              description: The MinIO endpoint *without* the leading
+                                `http(s)://`.
+                              type: string
+                            endpointCA:
+                              description: A base64-endcoded PEM certificate chain
+                                to use when verifying the certificate supplied by
+                                the MinIO server.
+                              type: string
+                            insecureNoTLS:
+                              description: Do not use TLS when communicating with
+                                the MinIO API.
+                              type: boolean
+                            insecureSkipVerify:
+                              description: Skip verification of the certificate supplied
+                                by the MinIO server.
+                              type: boolean
+                            key:
+                              description: In the context of a src config, a directory
+                                prefix to match for objects to be sent through the
+                                pipeline. An empty value means ALL objects in the
+                                bucket, or the equivalent of `/`. In the context of
+                                a sink config, a go-template to use for the destination
+                                name. The template allows sprig functions and is passed
+                                the value "SrcName" representing the base of the key
+                                of the object that triggered the pipeline, and "SrcExt"
+                                with the extension. An empty value represents using
+                                the same key as the source which would only work for
+                                a objects being processed to different buckets and
+                                prefixes. When splitting streams the prefixes "audio_"
+                                and "video_" respectively will be added to the resulting
+                                filenames.
+                              type: string
+                            region:
+                              description: The region to connect to in MinIO.
+                              type: string
+                          type: object
+                      type: object
+                    name:
+                      description: The actual name for the object being read or written
+                        to. In the context of a source object this is pulled from
+                        a watch event. In the context of a destination this is computed
+                        by the controller from the user supplied configuration.
+                      type: string
+                    streamType:
+                      description: The type of the stream for this object. Only applies
+                        to sinks. For a split transform pipeline there will be an
+                        Object for each stream. Otherwise there will be a single object
+                        with a StreamTypeAll.
+                      type: string
+                  required:
+                  - config
+                  - name
+                  - streamType
+                  type: object
+                type: array
+              src:
+                description: The source object for the pipeline.
+                properties:
+                  config:
+                    description: The endpoint and bucket configurations for the object.
+                    properties:
+                      minio:
+                        description: Configurations for a MinIO source or sink
+                        properties:
+                          bucket:
+                            description: In the context of a src config, the bucket
+                              to watch for objects to pass through the pipeline. In
+                              the context of a sink config, the bucket to save processed
+                              objects.
+                            type: string
+                          credentialsSecret:
+                            description: The secret that contains the credentials
+                              for connecting to MinIO. The secret must contain two
+                              keys. The `access-key-id` key must contain the contents
+                              of the Access Key ID. The `secret-access-key` key must
+                              contain the contents of the Secret Access Key.
+                            properties:
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                            type: object
+                          endpoint:
+                            description: The MinIO endpoint *without* the leading
+                              `http(s)://`.
+                            type: string
+                          endpointCA:
+                            description: A base64-endcoded PEM certificate chain to
+                              use when verifying the certificate supplied by the MinIO
+                              server.
+                            type: string
+                          insecureNoTLS:
+                            description: Do not use TLS when communicating with the
+                              MinIO API.
+                            type: boolean
+                          insecureSkipVerify:
+                            description: Skip verification of the certificate supplied
+                              by the MinIO server.
+                            type: boolean
+                          key:
+                            description: In the context of a src config, a directory
+                              prefix to match for objects to be sent through the pipeline.
+                              An empty value means ALL objects in the bucket, or the
+                              equivalent of `/`. In the context of a sink config,
+                              a go-template to use for the destination name. The template
+                              allows sprig functions and is passed the value "SrcName"
+                              representing the base of the key of the object that
+                              triggered the pipeline, and "SrcExt" with the extension.
+                              An empty value represents using the same key as the
+                              source which would only work for a objects being processed
+                              to different buckets and prefixes. When splitting streams
+                              the prefixes "audio_" and "video_" respectively will
+                              be added to the resulting filenames.
+                            type: string
+                          region:
+                            description: The region to connect to in MinIO.
+                            type: string
+                        type: object
+                    type: object
+                  name:
+                    description: The actual name for the object being read or written
+                      to. In the context of a source object this is pulled from a
+                      watch event. In the context of a destination this is computed
+                      by the controller from the user supplied configuration.
+                    type: string
+                  streamType:
+                    description: The type of the stream for this object. Only applies
+                      to sinks. For a split transform pipeline there will be an Object
+                      for each stream. Otherwise there will be a single object with
+                      a StreamTypeAll.
+                    type: string
+                required:
+                - config
+                - name
+                - streamType
+                type: object
+            required:
+            - pipelineRef
+            - sinks
+            - src
+            type: object
+          status:
+            description: JobStatus defines the observed state of Job
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations
+                  of a job's state
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource. --- This struct is intended for direct
+                    use as an array at the field path .status.conditions.  For example,
+                    type FooStatus struct{     // Represents the observations of a
+                    foo's current state.     // Known .status.conditions.type are:
+                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
+                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
+                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
+                    \n     // other fields }"
+                  properties:
+                    lastTransitionTime:
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another. This should be when
+                        the underlying condition changed.  If that is not known, then
+                        using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: message is a human readable message indicating
+                        details about the transition. This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: reason contains a programmatic identifier indicating
+                        the reason for the condition's last transition. Producers
+                        of specific condition types may define expected values and
+                        meanings for this field, and whether the values are considered
+                        a guaranteed API. The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        --- Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: splittransforms.pipelines.gst.io
+spec:
+  group: pipelines.gst.io
+  names:
+    kind: SplitTransform
+    listKind: SplitTransformList
+    plural: splittransforms
+    singular: splittransform
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .status.conditions[-1].message
+      name: Status
+      priority: 1
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: SplitTransform is the Schema for the splittransforms API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SplitTransformSpec defines the desired state of SplitTransform.
+              Note that due to current implementation, the various streams can be
+              directed to different buckets, but they have to be buckets accessible
+              via the same MinIO/S3 server(s).
+            properties:
+              audio:
+                description: Configurations for audio stream outputs. The linkto field
+                  in the pipeline config should be present with the value `audio-out`
+                  to direct an element to this output.
+                properties:
+                  minio:
+                    description: Configurations for a MinIO source or sink
+                    properties:
+                      bucket:
+                        description: In the context of a src config, the bucket to
+                          watch for objects to pass through the pipeline. In the context
+                          of a sink config, the bucket to save processed objects.
+                        type: string
+                      credentialsSecret:
+                        description: The secret that contains the credentials for
+                          connecting to MinIO. The secret must contain two keys. The
+                          `access-key-id` key must contain the contents of the Access
+                          Key ID. The `secret-access-key` key must contain the contents
+                          of the Secret Access Key.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                        type: object
+                      endpoint:
+                        description: The MinIO endpoint *without* the leading `http(s)://`.
+                        type: string
+                      endpointCA:
+                        description: A base64-endcoded PEM certificate chain to use
+                          when verifying the certificate supplied by the MinIO server.
+                        type: string
+                      insecureNoTLS:
+                        description: Do not use TLS when communicating with the MinIO
+                          API.
+                        type: boolean
+                      insecureSkipVerify:
+                        description: Skip verification of the certificate supplied
+                          by the MinIO server.
+                        type: boolean
+                      key:
+                        description: In the context of a src config, a directory prefix
+                          to match for objects to be sent through the pipeline. An
+                          empty value means ALL objects in the bucket, or the equivalent
+                          of `/`. In the context of a sink config, a go-template to
+                          use for the destination name. The template allows sprig
+                          functions and is passed the value "SrcName" representing
+                          the base of the key of the object that triggered the pipeline,
+                          and "SrcExt" with the extension. An empty value represents
+                          using the same key as the source which would only work for
+                          a objects being processed to different buckets and prefixes.
+                          When splitting streams the prefixes "audio_" and "video_"
+                          respectively will be added to the resulting filenames.
+                        type: string
+                      region:
+                        description: The region to connect to in MinIO.
+                        type: string
+                    type: object
+                type: object
+              globals:
+                description: Global configurations to apply when omitted from the
+                  src or sink configurations.
+                properties:
+                  minio:
+                    description: Configurations for a MinIO source or sink
+                    properties:
+                      bucket:
+                        description: In the context of a src config, the bucket to
+                          watch for objects to pass through the pipeline. In the context
+                          of a sink config, the bucket to save processed objects.
+                        type: string
+                      credentialsSecret:
+                        description: The secret that contains the credentials for
+                          connecting to MinIO. The secret must contain two keys. The
+                          `access-key-id` key must contain the contents of the Access
+                          Key ID. The `secret-access-key` key must contain the contents
+                          of the Secret Access Key.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                        type: object
+                      endpoint:
+                        description: The MinIO endpoint *without* the leading `http(s)://`.
+                        type: string
+                      endpointCA:
+                        description: A base64-endcoded PEM certificate chain to use
+                          when verifying the certificate supplied by the MinIO server.
+                        type: string
+                      insecureNoTLS:
+                        description: Do not use TLS when communicating with the MinIO
+                          API.
+                        type: boolean
+                      insecureSkipVerify:
+                        description: Skip verification of the certificate supplied
+                          by the MinIO server.
+                        type: boolean
+                      key:
+                        description: In the context of a src config, a directory prefix
+                          to match for objects to be sent through the pipeline. An
+                          empty value means ALL objects in the bucket, or the equivalent
+                          of `/`. In the context of a sink config, a go-template to
+                          use for the destination name. The template allows sprig
+                          functions and is passed the value "SrcName" representing
+                          the base of the key of the object that triggered the pipeline,
+                          and "SrcExt" with the extension. An empty value represents
+                          using the same key as the source which would only work for
+                          a objects being processed to different buckets and prefixes.
+                          When splitting streams the prefixes "audio_" and "video_"
+                          respectively will be added to the resulting filenames.
+                        type: string
+                      region:
+                        description: The region to connect to in MinIO.
+                        type: string
+                    type: object
+                type: object
+              pipeline:
+                description: The configuration for the processing pipeline
+                properties:
+                  debug:
+                    description: Debug configurations for the pipeline
+                    properties:
+                      dot:
+                        description: Dot specifies to dump a dot file of the pipeline
+                          layout for debugging.
+                        properties:
+                          interval:
+                            description: The interval in seconds to save pipeline
+                              graphs. Defaults to every 3 seconds.
+                            type: integer
+                          path:
+                            description: The path to save files. The configuration
+                              other than the path is assumed to be that of the source
+                              of the pipeline. For example, for a MinIO source, this
+                              should be a prefix in the same bucket as the source
+                              (but not overlapping with the watch prefix otherwise
+                              an infinite loop will happen). The files will be saved
+                              in directories matching the source object's name with
+                              the _debug suffix.
+                            type: string
+                          render:
+                            description: Specify to also render the pipeline graph
+                              to images in the given format. Accepted formats are
+                              png, svg, or jpg.
+                            type: string
+                          timestamped:
+                            description: Whether to save timestamped versions of the
+                              pipeline layout. This will produce a new graph for every
+                              interval specified by Interval. The default is to only
+                              keep the latest graph.
+                            type: boolean
+                        type: object
+                      logLevel:
+                        description: The level of log output to produce from the gstreamer
+                          process. This value gets set to the GST_DEBUG variable.
+                          Defaults to INFO level (4). Higher numbers mean more output.
+                        type: integer
+                    type: object
+                  elements:
+                    description: A list of element configurations in the order they
+                      will be used in the pipeline. Using these is mutually exclusive
+                      with a decodebin configuration. This only really works for linear
+                      pipelines. That is to say, not the syntax used by `gst-launch-1.0`
+                      that allows naming elements and referencing them later in the
+                      pipeline. For complex handling of multiple streams decodebin
+                      will still be better to work with for now, despite its shortcomings.
+                    items:
+                      description: ElementConfig represents the configuration of a
+                        single element in a transform pipeline.
+                      properties:
+                        alias:
+                          description: Applies an alias to this element in the pipeline
+                            configuration. This allows you to specify an element block
+                            with this value as the name and have it act as a "goto"
+                            or "linkto" while building the pipeline. Note that the
+                            aliases "video-out" and "audio-out" are reserved for internal
+                            use.
+                          type: string
+                        goto:
+                          description: The alias to an element to treat as this configuration.
+                            Useful for directing the output of elements with multiple
+                            src pads, such as decodebin.
+                          type: string
+                        linkto:
+                          description: The alias to an element to link the previous
+                            element's sink pad to. Useful for directing the branches
+                            of a multi-stream pipeline to a muxer. A linkto almost
+                            always needs to be followed by a goto, except when the
+                            element being linked to is next in the pipeline, in which
+                            case you can omit the linkto entirely.
+                          type: string
+                        name:
+                          description: The name of the element. See the GStreamer
+                            plugin documentation for a comprehensive list of all the
+                            plugins available. Custom pipeline images can also be
+                            used that are prebaked with additional plugins.
+                          type: string
+                        properties:
+                          additionalProperties:
+                            type: string
+                          description: Optional properties to apply to this element.
+                            To not piss off the CRD generator values are declared
+                            as a string, but almost anything that can be passed to
+                            gst-launch-1.0 will work. Caps will be parsed from their
+                            string representation.
+                          type: object
+                      type: object
+                    type: array
+                  image:
+                    description: The image to use to run a/v processing pipelines.
+                    type: string
+                  resources:
+                    description: Resource restraints to place on jobs created for
+                      this pipeline.
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                type: object
+              src:
+                description: Configurations for src object to the pipeline.
+                properties:
+                  minio:
+                    description: Configurations for a MinIO source or sink
+                    properties:
+                      bucket:
+                        description: In the context of a src config, the bucket to
+                          watch for objects to pass through the pipeline. In the context
+                          of a sink config, the bucket to save processed objects.
+                        type: string
+                      credentialsSecret:
+                        description: The secret that contains the credentials for
+                          connecting to MinIO. The secret must contain two keys. The
+                          `access-key-id` key must contain the contents of the Access
+                          Key ID. The `secret-access-key` key must contain the contents
+                          of the Secret Access Key.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                        type: object
+                      endpoint:
+                        description: The MinIO endpoint *without* the leading `http(s)://`.
+                        type: string
+                      endpointCA:
+                        description: A base64-endcoded PEM certificate chain to use
+                          when verifying the certificate supplied by the MinIO server.
+                        type: string
+                      insecureNoTLS:
+                        description: Do not use TLS when communicating with the MinIO
+                          API.
+                        type: boolean
+                      insecureSkipVerify:
+                        description: Skip verification of the certificate supplied
+                          by the MinIO server.
+                        type: boolean
+                      key:
+                        description: In the context of a src config, a directory prefix
+                          to match for objects to be sent through the pipeline. An
+                          empty value means ALL objects in the bucket, or the equivalent
+                          of `/`. In the context of a sink config, a go-template to
+                          use for the destination name. The template allows sprig
+                          functions and is passed the value "SrcName" representing
+                          the base of the key of the object that triggered the pipeline,
+                          and "SrcExt" with the extension. An empty value represents
+                          using the same key as the source which would only work for
+                          a objects being processed to different buckets and prefixes.
+                          When splitting streams the prefixes "audio_" and "video_"
+                          respectively will be added to the resulting filenames.
+                        type: string
+                      region:
+                        description: The region to connect to in MinIO.
+                        type: string
+                    type: object
+                type: object
+              video:
+                description: Configurations for video stream outputs. The linkto field
+                  in the pipeline config should be present with the value `video-out`
+                  to direct an element to this output.
+                properties:
+                  minio:
+                    description: Configurations for a MinIO source or sink
+                    properties:
+                      bucket:
+                        description: In the context of a src config, the bucket to
+                          watch for objects to pass through the pipeline. In the context
+                          of a sink config, the bucket to save processed objects.
+                        type: string
+                      credentialsSecret:
+                        description: The secret that contains the credentials for
+                          connecting to MinIO. The secret must contain two keys. The
+                          `access-key-id` key must contain the contents of the Access
+                          Key ID. The `secret-access-key` key must contain the contents
+                          of the Secret Access Key.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                        type: object
+                      endpoint:
+                        description: The MinIO endpoint *without* the leading `http(s)://`.
+                        type: string
+                      endpointCA:
+                        description: A base64-endcoded PEM certificate chain to use
+                          when verifying the certificate supplied by the MinIO server.
+                        type: string
+                      insecureNoTLS:
+                        description: Do not use TLS when communicating with the MinIO
+                          API.
+                        type: boolean
+                      insecureSkipVerify:
+                        description: Skip verification of the certificate supplied
+                          by the MinIO server.
+                        type: boolean
+                      key:
+                        description: In the context of a src config, a directory prefix
+                          to match for objects to be sent through the pipeline. An
+                          empty value means ALL objects in the bucket, or the equivalent
+                          of `/`. In the context of a sink config, a go-template to
+                          use for the destination name. The template allows sprig
+                          functions and is passed the value "SrcName" representing
+                          the base of the key of the object that triggered the pipeline,
+                          and "SrcExt" with the extension. An empty value represents
+                          using the same key as the source which would only work for
+                          a objects being processed to different buckets and prefixes.
+                          When splitting streams the prefixes "audio_" and "video_"
+                          respectively will be added to the resulting filenames.
+                        type: string
+                      region:
+                        description: The region to connect to in MinIO.
+                        type: string
+                    type: object
+                type: object
+            required:
+            - pipeline
+            - src
+            type: object
+          status:
+            description: SplitTransformStatus defines the observed state of SplitTransform
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations
+                  of a splittransform's state
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource. --- This struct is intended for direct
+                    use as an array at the field path .status.conditions.  For example,
+                    type FooStatus struct{     // Represents the observations of a
+                    foo's current state.     // Known .status.conditions.type are:
+                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
+                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
+                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
+                    \n     // other fields }"
+                  properties:
+                    lastTransitionTime:
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another. This should be when
+                        the underlying condition changed.  If that is not known, then
+                        using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: message is a human readable message indicating
+                        details about the transition. This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: reason contains a programmatic identifier indicating
+                        the reason for the condition's last transition. Producers
+                        of specific condition types may define expected values and
+                        meanings for this field, and whether the values are considered
+                        a guaranteed API. The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        --- Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: transforms.pipelines.gst.io
+spec:
+  group: pipelines.gst.io
+  names:
+    kind: Transform
+    listKind: TransformList
+    plural: transforms
+    singular: transform
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .status.conditions[-1].message
+      name: Status
+      priority: 1
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: Transform is the Schema for the transforms API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TransformSpec defines the desired state of Transform
+            properties:
+              globals:
+                description: Global configurations to apply when omitted from the
+                  src or sink configurations.
+                properties:
+                  minio:
+                    description: Configurations for a MinIO source or sink
+                    properties:
+                      bucket:
+                        description: In the context of a src config, the bucket to
+                          watch for objects to pass through the pipeline. In the context
+                          of a sink config, the bucket to save processed objects.
+                        type: string
+                      credentialsSecret:
+                        description: The secret that contains the credentials for
+                          connecting to MinIO. The secret must contain two keys. The
+                          `access-key-id` key must contain the contents of the Access
+                          Key ID. The `secret-access-key` key must contain the contents
+                          of the Secret Access Key.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                        type: object
+                      endpoint:
+                        description: The MinIO endpoint *without* the leading `http(s)://`.
+                        type: string
+                      endpointCA:
+                        description: A base64-endcoded PEM certificate chain to use
+                          when verifying the certificate supplied by the MinIO server.
+                        type: string
+                      insecureNoTLS:
+                        description: Do not use TLS when communicating with the MinIO
+                          API.
+                        type: boolean
+                      insecureSkipVerify:
+                        description: Skip verification of the certificate supplied
+                          by the MinIO server.
+                        type: boolean
+                      key:
+                        description: In the context of a src config, a directory prefix
+                          to match for objects to be sent through the pipeline. An
+                          empty value means ALL objects in the bucket, or the equivalent
+                          of `/`. In the context of a sink config, a go-template to
+                          use for the destination name. The template allows sprig
+                          functions and is passed the value "SrcName" representing
+                          the base of the key of the object that triggered the pipeline,
+                          and "SrcExt" with the extension. An empty value represents
+                          using the same key as the source which would only work for
+                          a objects being processed to different buckets and prefixes.
+                          When splitting streams the prefixes "audio_" and "video_"
+                          respectively will be added to the resulting filenames.
+                        type: string
+                      region:
+                        description: The region to connect to in MinIO.
+                        type: string
+                    type: object
+                type: object
+              pipeline:
+                description: The configuration for the processing pipeline
+                properties:
+                  debug:
+                    description: Debug configurations for the pipeline
+                    properties:
+                      dot:
+                        description: Dot specifies to dump a dot file of the pipeline
+                          layout for debugging.
+                        properties:
+                          interval:
+                            description: The interval in seconds to save pipeline
+                              graphs. Defaults to every 3 seconds.
+                            type: integer
+                          path:
+                            description: The path to save files. The configuration
+                              other than the path is assumed to be that of the source
+                              of the pipeline. For example, for a MinIO source, this
+                              should be a prefix in the same bucket as the source
+                              (but not overlapping with the watch prefix otherwise
+                              an infinite loop will happen). The files will be saved
+                              in directories matching the source object's name with
+                              the _debug suffix.
+                            type: string
+                          render:
+                            description: Specify to also render the pipeline graph
+                              to images in the given format. Accepted formats are
+                              png, svg, or jpg.
+                            type: string
+                          timestamped:
+                            description: Whether to save timestamped versions of the
+                              pipeline layout. This will produce a new graph for every
+                              interval specified by Interval. The default is to only
+                              keep the latest graph.
+                            type: boolean
+                        type: object
+                      logLevel:
+                        description: The level of log output to produce from the gstreamer
+                          process. This value gets set to the GST_DEBUG variable.
+                          Defaults to INFO level (4). Higher numbers mean more output.
+                        type: integer
+                    type: object
+                  elements:
+                    description: A list of element configurations in the order they
+                      will be used in the pipeline. Using these is mutually exclusive
+                      with a decodebin configuration. This only really works for linear
+                      pipelines. That is to say, not the syntax used by `gst-launch-1.0`
+                      that allows naming elements and referencing them later in the
+                      pipeline. For complex handling of multiple streams decodebin
+                      will still be better to work with for now, despite its shortcomings.
+                    items:
+                      description: ElementConfig represents the configuration of a
+                        single element in a transform pipeline.
+                      properties:
+                        alias:
+                          description: Applies an alias to this element in the pipeline
+                            configuration. This allows you to specify an element block
+                            with this value as the name and have it act as a "goto"
+                            or "linkto" while building the pipeline. Note that the
+                            aliases "video-out" and "audio-out" are reserved for internal
+                            use.
+                          type: string
+                        goto:
+                          description: The alias to an element to treat as this configuration.
+                            Useful for directing the output of elements with multiple
+                            src pads, such as decodebin.
+                          type: string
+                        linkto:
+                          description: The alias to an element to link the previous
+                            element's sink pad to. Useful for directing the branches
+                            of a multi-stream pipeline to a muxer. A linkto almost
+                            always needs to be followed by a goto, except when the
+                            element being linked to is next in the pipeline, in which
+                            case you can omit the linkto entirely.
+                          type: string
+                        name:
+                          description: The name of the element. See the GStreamer
+                            plugin documentation for a comprehensive list of all the
+                            plugins available. Custom pipeline images can also be
+                            used that are prebaked with additional plugins.
+                          type: string
+                        properties:
+                          additionalProperties:
+                            type: string
+                          description: Optional properties to apply to this element.
+                            To not piss off the CRD generator values are declared
+                            as a string, but almost anything that can be passed to
+                            gst-launch-1.0 will work. Caps will be parsed from their
+                            string representation.
+                          type: object
+                      type: object
+                    type: array
+                  image:
+                    description: The image to use to run a/v processing pipelines.
+                    type: string
+                  resources:
+                    description: Resource restraints to place on jobs created for
+                      this pipeline.
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                type: object
+              sink:
+                description: Configurations for sink objects from the pipeline.
+                properties:
+                  minio:
+                    description: Configurations for a MinIO source or sink
+                    properties:
+                      bucket:
+                        description: In the context of a src config, the bucket to
+                          watch for objects to pass through the pipeline. In the context
+                          of a sink config, the bucket to save processed objects.
+                        type: string
+                      credentialsSecret:
+                        description: The secret that contains the credentials for
+                          connecting to MinIO. The secret must contain two keys. The
+                          `access-key-id` key must contain the contents of the Access
+                          Key ID. The `secret-access-key` key must contain the contents
+                          of the Secret Access Key.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                        type: object
+                      endpoint:
+                        description: The MinIO endpoint *without* the leading `http(s)://`.
+                        type: string
+                      endpointCA:
+                        description: A base64-endcoded PEM certificate chain to use
+                          when verifying the certificate supplied by the MinIO server.
+                        type: string
+                      insecureNoTLS:
+                        description: Do not use TLS when communicating with the MinIO
+                          API.
+                        type: boolean
+                      insecureSkipVerify:
+                        description: Skip verification of the certificate supplied
+                          by the MinIO server.
+                        type: boolean
+                      key:
+                        description: In the context of a src config, a directory prefix
+                          to match for objects to be sent through the pipeline. An
+                          empty value means ALL objects in the bucket, or the equivalent
+                          of `/`. In the context of a sink config, a go-template to
+                          use for the destination name. The template allows sprig
+                          functions and is passed the value "SrcName" representing
+                          the base of the key of the object that triggered the pipeline,
+                          and "SrcExt" with the extension. An empty value represents
+                          using the same key as the source which would only work for
+                          a objects being processed to different buckets and prefixes.
+                          When splitting streams the prefixes "audio_" and "video_"
+                          respectively will be added to the resulting filenames.
+                        type: string
+                      region:
+                        description: The region to connect to in MinIO.
+                        type: string
+                    type: object
+                type: object
+              src:
+                description: Configurations for src object to the pipeline.
+                properties:
+                  minio:
+                    description: Configurations for a MinIO source or sink
+                    properties:
+                      bucket:
+                        description: In the context of a src config, the bucket to
+                          watch for objects to pass through the pipeline. In the context
+                          of a sink config, the bucket to save processed objects.
+                        type: string
+                      credentialsSecret:
+                        description: The secret that contains the credentials for
+                          connecting to MinIO. The secret must contain two keys. The
+                          `access-key-id` key must contain the contents of the Access
+                          Key ID. The `secret-access-key` key must contain the contents
+                          of the Secret Access Key.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                        type: object
+                      endpoint:
+                        description: The MinIO endpoint *without* the leading `http(s)://`.
+                        type: string
+                      endpointCA:
+                        description: A base64-endcoded PEM certificate chain to use
+                          when verifying the certificate supplied by the MinIO server.
+                        type: string
+                      insecureNoTLS:
+                        description: Do not use TLS when communicating with the MinIO
+                          API.
+                        type: boolean
+                      insecureSkipVerify:
+                        description: Skip verification of the certificate supplied
+                          by the MinIO server.
+                        type: boolean
+                      key:
+                        description: In the context of a src config, a directory prefix
+                          to match for objects to be sent through the pipeline. An
+                          empty value means ALL objects in the bucket, or the equivalent
+                          of `/`. In the context of a sink config, a go-template to
+                          use for the destination name. The template allows sprig
+                          functions and is passed the value "SrcName" representing
+                          the base of the key of the object that triggered the pipeline,
+                          and "SrcExt" with the extension. An empty value represents
+                          using the same key as the source which would only work for
+                          a objects being processed to different buckets and prefixes.
+                          When splitting streams the prefixes "audio_" and "video_"
+                          respectively will be added to the resulting filenames.
+                        type: string
+                      region:
+                        description: The region to connect to in MinIO.
+                        type: string
+                    type: object
+                type: object
+            required:
+            - pipeline
+            - sink
+            - src
+            type: object
+          status:
+            description: TransformStatus defines the observed state of Transform
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations
+                  of a transform's state
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource. --- This struct is intended for direct
+                    use as an array at the field path .status.conditions.  For example,
+                    type FooStatus struct{     // Represents the observations of a
+                    foo's current state.     // Known .status.conditions.type are:
+                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
+                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
+                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
+                    \n     // other fields }"
+                  properties:
+                    lastTransitionTime:
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another. This should be when
+                        the underlying condition changed.  If that is not known, then
+                        using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: message is a human readable message indicating
+                        details about the transition. This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: reason contains a programmatic identifier indicating
+                        the reason for the condition's last transition. Producers
+                        of specific condition types may define expected values and
+                        meanings for this field, and whether the values are considered
+                        a guaranteed API. The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        --- Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gst-leader-election-role
+  namespace: gst-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: gst-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - jobs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - splittransforms
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - splittransforms/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - transforms
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pipelines.gst.io
+  resources:
+  - transforms/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gst-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gst-proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gst-leader-election-rolebinding
+  namespace: gst-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gst-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: gst-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gst-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gst-manager-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: gst-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gst-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gst-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: gst-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: gst-controller-manager-metrics-service
+  namespace: gst-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: gst-controller-manager
+  namespace: gst-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.5.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --metrics-addr=127.0.0.1:8080
+        - --enable-leader-election
+        command:
+        - /manager
+        image: ghcr.io/tinyzimmer/gst-pipeline-operator/controller:0.0.1
+        name: manager
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+      terminationGracePeriodSeconds: 10

@@ -1,7 +1,7 @@
 # Current Operator version
 VERSION ?= 0.0.1
 # Default bundle image tag
-BUNDLE_IMG ?= controller-bundle:$(VERSION)
+BUNDLE_IMG ?= $(REPO)/controller-bundle:$(VERSION)
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
@@ -56,6 +56,11 @@ uninstall: manifests kustomize
 deploy: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+deploy-manifest: manifests kustomize
+	mkdir -p deploy/manifests
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default > deploy/manifests/gst-pipeline-operator-full.yaml
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
@@ -132,6 +137,9 @@ GST_IMAGE ?= $(REPO)/gstreamer:$(VERSION)
 docker-gst-build:
 	docker build -f gst/Dockerfile -t $(GST_IMAGE) .
 
+docker-gst-push:
+	docker push $(GST_IMAGE)
+
 docker-build-all: docker-build docker-gst-build
 
 K3D ?= $(GOBIN)/k3d
@@ -149,8 +157,8 @@ local-cluster:
 local-import: docker-build-all
 	$(K3D) image import --cluster=$(CLUSTER_NAME) $(IMG) $(GST_IMAGE)
 
-local-deploy: local-import
-	KUBECONFIG=$(CLUSTER_KUBECONFIG) $(MAKE) deploy
+local-deploy: local-import deploy-manifest
+	KUBECONFIG=$(CLUSTER_KUBECONFIG) kubectl apply -f deploy/manifests/gst-pipeline-operator-full.yaml
 
 TEST_HELM ?= KUBECONFIG=$(CLUSTER_KUBECONFIG) helm
 local-minio:
