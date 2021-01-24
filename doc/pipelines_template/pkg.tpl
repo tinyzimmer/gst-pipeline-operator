@@ -1,6 +1,6 @@
 {{ define "packages" }}
 
-<h2> kVDI CRD Reference</h2>
+<h2> GST Pipelines CRD Reference</h2>
 
 {{ with .packages}}
 <h3>Packages:</h3>

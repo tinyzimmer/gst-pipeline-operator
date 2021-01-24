@@ -56,8 +56,7 @@ type MinIOConfig struct {
 	// template allows sprig functions and is passed the value "SrcName" representing the base of the key
 	// of the object that triggered the pipeline, and "SrcExt" with the extension. An empty value represents
 	// using the same key as the source which would only work for a objects being processed to different
-	// buckets and prefixes. When splitting streams the prefixes "audio_" and "video_" respectively will
-	// be added to the resulting filenames.
+	// buckets and prefixes.
 	Prefix string `json:"key,omitempty"`
 	// The secret that contains the credentials for connecting to MinIO. The secret must contain
 	// two keys. The `access-key-id` key must contain the contents of the Access Key ID. The

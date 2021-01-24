@@ -1,4 +1,4 @@
-## kVDI CRD Reference
+## GST Pipelines CRD Reference
 
 ### Packages:
 
@@ -288,4 +288,4 @@ TransformSpec defines the desired state of Transform
 
 ------------------------------------------------------------------------
 
-*Generated with `gen-crd-api-reference-docs` on git commit `8269c7e`.*
+*Generated with `gen-crd-api-reference-docs` on git commit `8924795`.*

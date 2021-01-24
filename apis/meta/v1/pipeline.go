@@ -49,7 +49,8 @@ type DebugConfig struct {
 	// The level of log output to produce from the gstreamer process. This value gets set to
 	// the GST_DEBUG variable. Defaults to INFO level (4). Higher numbers mean more output.
 	LogLevel int `json:"logLevel,omitempty"`
-	// Dot specifies to dump a dot file of the pipeline layout for debugging.
+	// Dot specifies to dump a dot file of the pipeline layout for debugging. The extending
+	// object allows for additional configurations to the output.
 	Dot *DotConfig `json:"dot,omitempty"`
 }
 
