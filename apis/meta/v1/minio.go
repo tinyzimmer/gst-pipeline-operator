@@ -55,7 +55,7 @@ type MinIOConfig struct {
 	// `/`. In the context of a sink config, a go-template to use for the destination name. The
 	// template allows sprig functions and is passed the value "SrcName" representing the base of the key
 	// of the object that triggered the pipeline, and "SrcExt" with the extension. An empty value represents
-	// using the same key as the source which would only work for a objects being processed to different
+	// using the same key as the source which would only work for objects being processed to different
 	// buckets and prefixes.
 	Prefix string `json:"key,omitempty"`
 	// The secret that contains the credentials for connecting to MinIO. The secret must contain

@@ -239,7 +239,7 @@ MinIOConfig defines a source or sink location for pipelines.
 <tr class="odd">
 <td><code>key</code><br />
 <em>string</em></td>
-<td><p>In the context of a src config, a directory prefix to match for objects to be sent through the pipeline. An empty value means ALL objects in the bucket, or the equivalent of <code>/</code>. In the context of a sink config, a go-template to use for the destination name. The template allows sprig functions and is passed the value “SrcName” representing the base of the key of the object that triggered the pipeline, and “SrcExt” with the extension. An empty value represents using the same key as the source which would only work for a objects being processed to different buckets and prefixes.</p></td>
+<td><p>In the context of a src config, a directory prefix to match for objects to be sent through the pipeline. An empty value means ALL objects in the bucket, or the equivalent of <code>/</code>. In the context of a sink config, a go-template to use for the destination name. The template allows sprig functions and is passed the value “SrcName” representing the base of the key of the object that triggered the pipeline, and “SrcExt” with the extension. An empty value represents using the same key as the source which would only work for objects being processed to different buckets and prefixes.</p></td>
 </tr>
 <tr class="even">
 <td><code>credentialsSecret</code><br />
@@ -399,4 +399,4 @@ designated for an output.
 
 ------------------------------------------------------------------------
 
-*Generated with `gen-crd-api-reference-docs` on git commit `8924795`.*
+*Generated with `gen-crd-api-reference-docs` on git commit `d333833`.*

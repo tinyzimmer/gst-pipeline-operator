@@ -133,13 +133,13 @@ func main() {
 					imgdata = buf.Bytes()
 				case "svg":
 					if err := g.Render(graph, graphviz.SVG, &buf); err != nil {
-						log.Error(err, "Failed to convert dotdata to PNG")
+						log.Error(err, "Failed to convert dotdata to SVG")
 						break DebugDotData
 					}
 					imgdata = buf.Bytes()
 				case "jpg":
 					if err := g.Render(graph, graphviz.JPG, &buf); err != nil {
-						log.Error(err, "Failed to convert dotdata to PNG")
+						log.Error(err, "Failed to convert dotdata to JPG")
 						break DebugDotData
 					}
 					imgdata = buf.Bytes()
@@ -157,7 +157,7 @@ func main() {
 					if _, err := mc.PutObject(context.Background(), outbucket, imgname, bytes.NewBuffer(imgdata), int64(len(imgdata)), minio.PutObjectOptions{
 						ContentType: "application/octet-stream",
 					}); err != nil {
-						log.Error(err, "Failed to upload PNG of dot graph")
+						log.Error(err, "Failed to upload rendered image of dot graph")
 					}
 				}
 
