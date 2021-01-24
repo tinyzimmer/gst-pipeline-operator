@@ -77,7 +77,7 @@ spec:
   # Globals will be merged into the `src` and `sink` configs during processing.
   # This is useful if all operations are happening against the same MinIO server
   # and buckets. You can also direct output to/from different servers and buckets
-  # by declaring those values in the respective areas instead of here.
+  # by declaring those values in their respective areas instead of here.
   globals:
     minio:
       endpoint: "minio.default.svc.cluster.local:9000"   # The endpoint for the MinIO server
@@ -88,7 +88,7 @@ spec:
         name: minio-credentials
   src:
     minio:
-      key: drop/   # Watch all files places in the drop/ prefix
+      key: drop/   # Watch all files placed in the drop/ prefix
   sink:
     minio:
       key: "mp4/{{ .SrcName }}.mp4"   # Generate an output name from this template. If the src file was called
