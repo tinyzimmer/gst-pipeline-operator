@@ -2,6 +2,8 @@
 
 A Kubernetes operator for running audio/video processing pipelines
 
+  - [API Reference](doc/pipelines.md)
+
 ## Quickstart
 
 This project is very young and does not have a ton of features yet. For the POC it can watch MinIO buckets

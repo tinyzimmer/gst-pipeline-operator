@@ -181,3 +181,11 @@ local-full: local-cluster local-minio local-deploy
 
 delete-local-cluster:
 	$(K3D) cluster delete $(CLUSTER_NAME)
+
+REFDOCS = bin/refdocs
+$(REFDOCS):
+	cd hack && go build -o $(REFDOCS) .
+
+api-docs: $(REFDOCS)
+	go mod vendor
+	bash hack/update-api-docs.sh

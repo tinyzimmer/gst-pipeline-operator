@@ -56,6 +56,7 @@ type SplitTransformStatus struct {
 // +kubebuilder:printcolumn:name="Status",type="string",priority=1,JSONPath=`.status.conditions[-1].message`
 
 // SplitTransform is the Schema for the splittransforms API
+// +kubebuilder:resource:path="splittransforms",scope=Namespaced
 type SplitTransform struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -20,10 +20,14 @@ require (
 	github.com/onsi/gomega v1.10.2
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/pkg/errors v0.9.1
+	github.com/russross/blackfriday/v2 v2.0.1
 	github.com/tinyzimmer/go-glib v0.0.19
 	github.com/tinyzimmer/go-gst v0.2.12
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v0.20.1
+	k8s.io/gengo v0.0.0-20201113003025-83324d819ded
+	k8s.io/klog v1.0.0
 	sigs.k8s.io/controller-runtime v0.8.0
 )
