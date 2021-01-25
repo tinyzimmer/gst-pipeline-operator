@@ -150,15 +150,21 @@ func (p *PipelineManager) Stop() {
 func (p *PipelineManager) watchSrcBucket(srcConfig *pipelinesmeta.MinIOConfig, client *minio.Client) {
 	log.Info("Watching for object created events", "Bucket", srcConfig.GetBucket(), "Prefix", srcConfig.GetPrefix())
 	eventChan := client.ListenBucketNotification(context.Background(), srcConfig.GetBucket(), srcConfig.GetPrefix(), "", []string{"s3:ObjectCreated:*"})
+	excludeRegex := srcConfig.GetExcludeRegex()
 	for {
 		select {
 		case event := <-eventChan:
 			for _, record := range event.Records {
 				log.Info("Processing record from MinIO event", "Record", record)
+				if excludeRegex != nil && excludeRegex.MatchString(record.S3.Object.Key) {
+					log.Info("Skipping processing for item matching exclude regex", "Object", record.S3.Object.Key)
+					continue
+				}
 				p.createJob(srcConfig, record.S3.Object.Key)
 			}
 		case <-p.reloadChan:
 			srcConfig = p.pipeline.GetSrcConfig().MinIO // TODO
+			excludeRegex = srcConfig.GetExcludeRegex()
 			log.Info("Reloading event channel", "Bucket", srcConfig.GetBucket(), "Prefix", srcConfig.GetPrefix())
 			eventChan = client.ListenBucketNotification(context.Background(), srcConfig.GetBucket(), srcConfig.GetPrefix(), "", []string{"s3:ObjectCreated:*"})
 		case <-p.stopChan:

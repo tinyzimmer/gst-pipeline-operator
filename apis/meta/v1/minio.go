@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -58,6 +59,11 @@ type MinIOConfig struct {
 	// using the same key as the source which would only work for objects being processed to different
 	// buckets and prefixes.
 	Prefix string `json:"key,omitempty"`
+	// A regular expression to filter out items placed in the `key`. Only makes sense in the context of a src
+	// config. This can be useful when chaining pipelines. You may want to exclude the "*_tmp" expression to
+	// filter out the temporary objects created while the miniosink is rendering the output of a pipeline, since
+	// it first creates chunked objects, and then pieces them together with the ComposeObject API.
+	Exclude string `json:"exclude,omitempty"`
 	// The secret that contains the credentials for connecting to MinIO. The secret must contain
 	// two keys. The `access-key-id` key must contain the contents of the Access Key ID. The
 	// `secret-access-key` key must contain the contents of the Secret Access Key.
@@ -172,4 +178,18 @@ func (m *MinIOConfig) GetDestinationKey(objectKey string) string {
 		return buf.String()
 	}
 	return path.Join(strings.TrimSuffix(m.GetPrefix(), "/"), path.Base(objectKey))
+}
+
+// GetExcludeRegex returns the regex to use for excluding objects, or nil if not present
+// or any error.
+func (m *MinIOConfig) GetExcludeRegex() *regexp.Regexp {
+	if m.Exclude == "" {
+		return nil
+	}
+	re, err := regexp.Compile(m.Exclude)
+	if err != nil {
+		fmt.Println("Failed to compile exclude regex", m.Exclude, "error:", err)
+		return nil
+	}
+	return re
 }

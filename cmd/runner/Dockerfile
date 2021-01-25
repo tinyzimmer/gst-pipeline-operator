@@ -26,7 +26,7 @@ FROM build-base as runner-build
 
 COPY apis /build/apis
 COPY pkg /build/pkg
-COPY gst/runner /build/runner
+COPY cmd/runner /build/runner
 RUN cd /build/runner && go build -o runner .
 
 ##

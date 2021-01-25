@@ -242,6 +242,11 @@ MinIOConfig defines a source or sink location for pipelines.
 <td><p>In the context of a src config, a directory prefix to match for objects to be sent through the pipeline. An empty value means ALL objects in the bucket, or the equivalent of <code>/</code>. In the context of a sink config, a go-template to use for the destination name. The template allows sprig functions and is passed the value “SrcName” representing the base of the key of the object that triggered the pipeline, and “SrcExt” with the extension. An empty value represents using the same key as the source which would only work for objects being processed to different buckets and prefixes.</p></td>
 </tr>
 <tr class="even">
+<td><code>exclude</code><br />
+<em>string</em></td>
+<td><p>A regular expression to filter out items placed in the <code>key</code>. Only makes sense in the context of a src config. This can be useful when chaining pipelines. You may want to exclude the “*_tmp” expression to filter out the temporary objects created while the miniosink is rendering the output of a pipeline, since it first creates chunked objects, and then pieces them together with the ComposeObject API.</p></td>
+</tr>
+<tr class="odd">
 <td><code>credentialsSecret</code><br />
 <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#localobjectreference-v1-core">Kubernetes core/v1.LocalObjectReference</a></em></td>
 <td><p>The secret that contains the credentials for connecting to MinIO. The secret must contain two keys. The <code>access-key-id</code> key must contain the contents of the Access Key ID. The <code>secret-access-key</code> key must contain the contents of the Secret Access Key.</p></td>
@@ -399,4 +404,4 @@ designated for an output.
 
 ------------------------------------------------------------------------
 
-*Generated with `gen-crd-api-reference-docs` on git commit `d333833`.*
+*Generated with `gen-crd-api-reference-docs` on git commit `aa0a239`.*

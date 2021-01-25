@@ -135,7 +135,7 @@ bundle-build:
 
 GST_IMAGE ?= $(REPO)/gstreamer:$(VERSION)
 docker-gst-build:
-	docker build -f gst/Dockerfile -t $(GST_IMAGE) .
+	docker build -f cmd/runner/Dockerfile -t $(GST_IMAGE) .
 
 docker-gst-push:
 	docker push $(GST_IMAGE)

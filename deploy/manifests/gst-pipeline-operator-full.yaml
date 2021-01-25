@@ -109,6 +109,16 @@ spec:
                                 to use when verifying the certificate supplied by
                                 the MinIO server.
                               type: string
+                            exclude:
+                              description: A regular expression to filter out items
+                                placed in the `key`. Only makes sense in the context
+                                of a src config. This can be useful when chaining
+                                pipelines. You may want to exclude the "*_tmp" expression
+                                to filter out the temporary objects created while
+                                the miniosink is rendering the output of a pipeline,
+                                since it first creates chunked objects, and then pieces
+                                them together with the ComposeObject API.
+                              type: string
                             insecureNoTLS:
                               description: Do not use TLS when communicating with
                                 the MinIO API.
@@ -128,10 +138,7 @@ spec:
                                 of the object that triggered the pipeline, and "SrcExt"
                                 with the extension. An empty value represents using
                                 the same key as the source which would only work for
-                                a objects being processed to different buckets and
-                                prefixes. When splitting streams the prefixes "audio_"
-                                and "video_" respectively will be added to the resulting
-                                filenames.
+                                objects being processed to different buckets and prefixes.
                               type: string
                             region:
                               description: The region to connect to in MinIO.
@@ -193,6 +200,16 @@ spec:
                               use when verifying the certificate supplied by the MinIO
                               server.
                             type: string
+                          exclude:
+                            description: A regular expression to filter out items
+                              placed in the `key`. Only makes sense in the context
+                              of a src config. This can be useful when chaining pipelines.
+                              You may want to exclude the "*_tmp" expression to filter
+                              out the temporary objects created while the miniosink
+                              is rendering the output of a pipeline, since it first
+                              creates chunked objects, and then pieces them together
+                              with the ComposeObject API.
+                            type: string
                           insecureNoTLS:
                             description: Do not use TLS when communicating with the
                               MinIO API.
@@ -211,10 +228,8 @@ spec:
                               representing the base of the key of the object that
                               triggered the pipeline, and "SrcExt" with the extension.
                               An empty value represents using the same key as the
-                              source which would only work for a objects being processed
-                              to different buckets and prefixes. When splitting streams
-                              the prefixes "audio_" and "video_" respectively will
-                              be added to the resulting filenames.
+                              source which would only work for objects being processed
+                              to different buckets and prefixes.
                             type: string
                           region:
                             description: The region to connect to in MinIO.
@@ -409,6 +424,15 @@ spec:
                         description: A base64-endcoded PEM certificate chain to use
                           when verifying the certificate supplied by the MinIO server.
                         type: string
+                      exclude:
+                        description: A regular expression to filter out items placed
+                          in the `key`. Only makes sense in the context of a src config.
+                          This can be useful when chaining pipelines. You may want
+                          to exclude the "*_tmp" expression to filter out the temporary
+                          objects created while the miniosink is rendering the output
+                          of a pipeline, since it first creates chunked objects, and
+                          then pieces them together with the ComposeObject API.
+                        type: string
                       insecureNoTLS:
                         description: Do not use TLS when communicating with the MinIO
                           API.
@@ -427,9 +451,7 @@ spec:
                           the base of the key of the object that triggered the pipeline,
                           and "SrcExt" with the extension. An empty value represents
                           using the same key as the source which would only work for
-                          a objects being processed to different buckets and prefixes.
-                          When splitting streams the prefixes "audio_" and "video_"
-                          respectively will be added to the resulting filenames.
+                          objects being processed to different buckets and prefixes.
                         type: string
                       region:
                         description: The region to connect to in MinIO.
@@ -467,6 +489,15 @@ spec:
                         description: A base64-endcoded PEM certificate chain to use
                           when verifying the certificate supplied by the MinIO server.
                         type: string
+                      exclude:
+                        description: A regular expression to filter out items placed
+                          in the `key`. Only makes sense in the context of a src config.
+                          This can be useful when chaining pipelines. You may want
+                          to exclude the "*_tmp" expression to filter out the temporary
+                          objects created while the miniosink is rendering the output
+                          of a pipeline, since it first creates chunked objects, and
+                          then pieces them together with the ComposeObject API.
+                        type: string
                       insecureNoTLS:
                         description: Do not use TLS when communicating with the MinIO
                           API.
@@ -485,9 +516,7 @@ spec:
                           the base of the key of the object that triggered the pipeline,
                           and "SrcExt" with the extension. An empty value represents
                           using the same key as the source which would only work for
-                          a objects being processed to different buckets and prefixes.
-                          When splitting streams the prefixes "audio_" and "video_"
-                          respectively will be added to the resulting filenames.
+                          objects being processed to different buckets and prefixes.
                         type: string
                       region:
                         description: The region to connect to in MinIO.
@@ -502,7 +531,8 @@ spec:
                     properties:
                       dot:
                         description: Dot specifies to dump a dot file of the pipeline
-                          layout for debugging.
+                          layout for debugging. The extending object allows for additional
+                          configurations to the output.
                         properties:
                           interval:
                             description: The interval in seconds to save pipeline
@@ -647,6 +677,15 @@ spec:
                         description: A base64-endcoded PEM certificate chain to use
                           when verifying the certificate supplied by the MinIO server.
                         type: string
+                      exclude:
+                        description: A regular expression to filter out items placed
+                          in the `key`. Only makes sense in the context of a src config.
+                          This can be useful when chaining pipelines. You may want
+                          to exclude the "*_tmp" expression to filter out the temporary
+                          objects created while the miniosink is rendering the output
+                          of a pipeline, since it first creates chunked objects, and
+                          then pieces them together with the ComposeObject API.
+                        type: string
                       insecureNoTLS:
                         description: Do not use TLS when communicating with the MinIO
                           API.
@@ -665,9 +704,7 @@ spec:
                           the base of the key of the object that triggered the pipeline,
                           and "SrcExt" with the extension. An empty value represents
                           using the same key as the source which would only work for
-                          a objects being processed to different buckets and prefixes.
-                          When splitting streams the prefixes "audio_" and "video_"
-                          respectively will be added to the resulting filenames.
+                          objects being processed to different buckets and prefixes.
                         type: string
                       region:
                         description: The region to connect to in MinIO.
@@ -706,6 +743,15 @@ spec:
                         description: A base64-endcoded PEM certificate chain to use
                           when verifying the certificate supplied by the MinIO server.
                         type: string
+                      exclude:
+                        description: A regular expression to filter out items placed
+                          in the `key`. Only makes sense in the context of a src config.
+                          This can be useful when chaining pipelines. You may want
+                          to exclude the "*_tmp" expression to filter out the temporary
+                          objects created while the miniosink is rendering the output
+                          of a pipeline, since it first creates chunked objects, and
+                          then pieces them together with the ComposeObject API.
+                        type: string
                       insecureNoTLS:
                         description: Do not use TLS when communicating with the MinIO
                           API.
@@ -724,9 +770,7 @@ spec:
                           the base of the key of the object that triggered the pipeline,
                           and "SrcExt" with the extension. An empty value represents
                           using the same key as the source which would only work for
-                          a objects being processed to different buckets and prefixes.
-                          When splitting streams the prefixes "audio_" and "video_"
-                          respectively will be added to the resulting filenames.
+                          objects being processed to different buckets and prefixes.
                         type: string
                       region:
                         description: The region to connect to in MinIO.
@@ -899,6 +943,15 @@ spec:
                         description: A base64-endcoded PEM certificate chain to use
                           when verifying the certificate supplied by the MinIO server.
                         type: string
+                      exclude:
+                        description: A regular expression to filter out items placed
+                          in the `key`. Only makes sense in the context of a src config.
+                          This can be useful when chaining pipelines. You may want
+                          to exclude the "*_tmp" expression to filter out the temporary
+                          objects created while the miniosink is rendering the output
+                          of a pipeline, since it first creates chunked objects, and
+                          then pieces them together with the ComposeObject API.
+                        type: string
                       insecureNoTLS:
                         description: Do not use TLS when communicating with the MinIO
                           API.
@@ -917,9 +970,7 @@ spec:
                           the base of the key of the object that triggered the pipeline,
                           and "SrcExt" with the extension. An empty value represents
                           using the same key as the source which would only work for
-                          a objects being processed to different buckets and prefixes.
-                          When splitting streams the prefixes "audio_" and "video_"
-                          respectively will be added to the resulting filenames.
+                          objects being processed to different buckets and prefixes.
                         type: string
                       region:
                         description: The region to connect to in MinIO.
@@ -934,7 +985,8 @@ spec:
                     properties:
                       dot:
                         description: Dot specifies to dump a dot file of the pipeline
-                          layout for debugging.
+                          layout for debugging. The extending object allows for additional
+                          configurations to the output.
                         properties:
                           interval:
                             description: The interval in seconds to save pipeline
@@ -1079,6 +1131,15 @@ spec:
                         description: A base64-endcoded PEM certificate chain to use
                           when verifying the certificate supplied by the MinIO server.
                         type: string
+                      exclude:
+                        description: A regular expression to filter out items placed
+                          in the `key`. Only makes sense in the context of a src config.
+                          This can be useful when chaining pipelines. You may want
+                          to exclude the "*_tmp" expression to filter out the temporary
+                          objects created while the miniosink is rendering the output
+                          of a pipeline, since it first creates chunked objects, and
+                          then pieces them together with the ComposeObject API.
+                        type: string
                       insecureNoTLS:
                         description: Do not use TLS when communicating with the MinIO
                           API.
@@ -1097,9 +1158,7 @@ spec:
                           the base of the key of the object that triggered the pipeline,
                           and "SrcExt" with the extension. An empty value represents
                           using the same key as the source which would only work for
-                          a objects being processed to different buckets and prefixes.
-                          When splitting streams the prefixes "audio_" and "video_"
-                          respectively will be added to the resulting filenames.
+                          objects being processed to different buckets and prefixes.
                         type: string
                       region:
                         description: The region to connect to in MinIO.
@@ -1136,6 +1195,15 @@ spec:
                         description: A base64-endcoded PEM certificate chain to use
                           when verifying the certificate supplied by the MinIO server.
                         type: string
+                      exclude:
+                        description: A regular expression to filter out items placed
+                          in the `key`. Only makes sense in the context of a src config.
+                          This can be useful when chaining pipelines. You may want
+                          to exclude the "*_tmp" expression to filter out the temporary
+                          objects created while the miniosink is rendering the output
+                          of a pipeline, since it first creates chunked objects, and
+                          then pieces them together with the ComposeObject API.
+                        type: string
                       insecureNoTLS:
                         description: Do not use TLS when communicating with the MinIO
                           API.
@@ -1154,9 +1222,7 @@ spec:
                           the base of the key of the object that triggered the pipeline,
                           and "SrcExt" with the extension. An empty value represents
                           using the same key as the source which would only work for
-                          a objects being processed to different buckets and prefixes.
-                          When splitting streams the prefixes "audio_" and "video_"
-                          respectively will be added to the resulting filenames.
+                          objects being processed to different buckets and prefixes.
                         type: string
                       region:
                         description: The region to connect to in MinIO.

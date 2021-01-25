@@ -65,4 +65,9 @@ const (
 	JobSrcObjectsEnvVar = "GST_PIPELINE_SRC_OBJECT"
 	// The environment variable where the sink objects are serialized and set.
 	JobSinkObjectsEnvVar = "GST_PIPELINE_SINK_OBJECTS"
+	// The environment variable where the name of the pipeline being watched is set for watcher
+	// processes.
+	WatcherPipelineNameEnvVar = "GST_WATCH_PIPELINE_NAME"
+	// The environment variable where the pipeline kind is set for the watcher processes.
+	WatcherPipelineKindEnvVar = "GST_WATCH_PIPELINE_KIND"
 )
